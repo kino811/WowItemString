@@ -10,21 +10,34 @@ public class TestLua : MonoBehaviour {
 	}
 	
     void DoTest() {
-        string luaString = @"
-            -- defines a factorial function
-            function Fact(n)
-                if (n == 0) then
-                    return 1
-                else
-                    return n * Fact(n - 1)
+        // test lua-string run
+        {
+            string luaString = @"return 'hello lua'";
+            DynValue res = Script.RunString(luaString);
+            Debug.Log("lua-string result: " + res.String);
+        }
+
+        // test lua run by script-object
+        {
+            string scriptCode = @"
+                -- defines a factorial function
+                function Fact(n)
+                    if (n == 0) then
+                        return 1
+                    else
+                        return n * Fact(n - 1)
+                    end
                 end
-            end
 
-            return Fact(5)
-        ";
+                return Fact(mynumber)";
 
-        DynValue res = Script.RunString(luaString);
+            Script script = new Script();
 
-        Debug.Log("lua-string evaluation result: " + res.Number);
+            // access the global environment
+            script.Globals["mynumber"] = 7;
+
+            DynValue res = script.DoString(scriptCode);
+            Debug.Log("lua-code result: " + res.Number);
+        }
     }
 }
