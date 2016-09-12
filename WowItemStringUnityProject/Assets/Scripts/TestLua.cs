@@ -1,6 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using MoonSharp.Interpreter;
+using System;
+
+[MoonSharpUserDataAttribute]
+public class MyUserData {
+    public void Do() {
+        Debug.Log("MyUserData.Do()");
+    }
+}
 
 public class TestLua : MonoBehaviour {
 
@@ -10,34 +19,23 @@ public class TestLua : MonoBehaviour {
 	}
 	
     void DoTest() {
-        // test lua-string run
-        {
-            string luaString = @"return 'hello lua'";
-            DynValue res = Script.RunString(luaString);
-            Debug.Log("lua-string result: " + res.String);
-        }
+        string scriptCode = @"
+            local messageString = [=[|cff969696|Hitem:{'id':170000,'needLv':6,'soulcoreMaxLv':0,'bindInfo':{'unbindableCount':100,'bindType':0},'duration':{'maxDuration':100,'duration':100},'strengtheningStep':0,'quality':0,'properties':[{'id':0,'value':0},{'id':1,'value':0},{'id':2,'value':0},{'id':3,'value':0},{'id':4,'value':0},{'id':5,'value':0},{'id':6,'value':0},{'id':7,'value':0},{'id':8,'value':0},{'id':9,'value':0}]}[Legend Sword]|h|r]=]
 
-        // test lua run by script-object
-        {
-            string scriptCode = @"
-                -- defines a factorial function
-                function Fact(n)
-                    if (n == 0) then
-                        return 1
-                    else
-                        return n * Fact(n - 1)
-                    end
-                end
+            return table.tostring({GetInfosFromHyperLinkFormat(messageString)})
+        ";
 
-                return Fact(mynumber)";
+        UserData.RegisterAssembly();
 
-            Script script = new Script();
+        Script script = new Script();
+        script.DebuggerEnabled = true;
+        script.DoFile("messageFormat");
+        script.DoFile("util");
 
-            // access the global environment
-            script.Globals["mynumber"] = 7;
+        script.Globals["myUserData"] = new MyUserData();
 
-            DynValue res = script.DoString(scriptCode);
-            Debug.Log("lua-code result: " + res.Number);
-        }
+        DynValue ret = script.DoString(scriptCode);
+
+        Debug.LogFormat("ret : {0}", ret.String);
     }
 }
